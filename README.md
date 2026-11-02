@@ -26,6 +26,8 @@ Untuk dipasang di situs (mis. pindotutuko.id), unggah salah satu berkas tersebut
   - Impor dokumen pendukung (Excel, CSV, PDF, DOCX). Angka KDB/KLB/KDH/KBG dideteksi otomatis untuk diverifikasi.
   - Laporan lengkap berisi geometri dan koordinat persil, ketentuan, perhitungan, kepatuhan, rekomendasi, 6 gambar, RTH, dan rujukan.
   - Ekspor ke **DOCX**, **HTML**, atau **Cetak/PDF**.
+- **Sempadan (GSB) & selubung bangunan 3D**, **hasil/kepadatan/parkir** (berbasis asumsi), **studi bayangan & jam matahari**, dan **generator opsi desain**. Fitur-fitur ini diadopsi setelah meninjau Autodesk Forma, TestFit, Archistar, dan Gridics (lihat tabel perbandingan di Beranda).
+- **Galeri foto referensi:** foto bangunan dan pohon dari Wikimedia Commons berlisensi Creative Commons, lengkap dengan penulis, lisensi, dan tautan sumber.
 - **09 Rujukan:** semua sumber dengan tautan yang dapat diklik.
 
 ## Struktur
@@ -51,4 +53,4 @@ npm run build
 
 Nilai aturan contoh dan ukuran tanaman bertanda * hanya untuk latihan atau visualisasi. Keputusan desain harus mengacu pada RDTR, peraturan zonasi, dan KKPR resmi, misalnya melalui GISTARU ATR/BPN.
 
-Dikembangkan oleh Pindo Tutuko · Arsitektur, Universitas Merdeka Malang · 2026.
+Dikembangkan oleh Respati Wikantiyoso dan Pindo Tutuko · Arsitektur, Universitas Merdeka Malang · 2026.
