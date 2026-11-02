@@ -9,6 +9,8 @@ export * from './indikator';
 export * from './preset';
 export * from './validasi';
 export * from './serialisasi';
+export * from './tautan';
+export * from './ekspor';
 
 export type HasilJalankan = { ok: true; hasil: HasilSimulasi } | { ok: false; galat: string[] };
 
