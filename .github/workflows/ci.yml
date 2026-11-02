@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Build
+        run: npm run build
+      - name: dist/ sesuai dengan src/
+        run: |
+          if ! git diff --quiet -- dist/; then
+            echo "::error::dist/ tidak sesuai dengan src/. Jalankan 'npm run build' dan commit hasilnya."
+            git diff --stat -- dist/
+            exit 1
+          fi
+      - name: Pasang Chromium untuk Playwright
+        run: npx playwright install --with-deps chromium
+      - name: Test regresi
+        run: npm test

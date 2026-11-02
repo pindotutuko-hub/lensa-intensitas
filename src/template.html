@@ -717,6 +717,12 @@ function fillZones(){ $('zone').innerHTML=ZONES.map(z=>`<option value="${z.id}">
 function applyZone(id){const z=ZONES.find(x=>x.id===id);S.zone=id; if(z&&z.kdb){S.kdb=z.kdb;S.klb=z.klb;S.kdh=z.kdh;S.kbg=z.kbg;S.hmax=z.h} persist();syncInputs();renderMini()}
 $('zone').onchange=e=>applyZone(e.target.value);
 const NUMS=['area','kdb','klb','kdh','kbg','hmax','gsb','k','r','nT','nC','ftfP','ftfT','eff','resPct','unit','ppu','pRes','pNon','srp','cost'];
+/* Batas nilai diambil dari atribut min/max tiap input. Nilai di luar batas (mis. KDB 0) membuat
+   jumlah lantai tak hingga dan menggantung halaman, jadi S selalu dijepit sebelum dihitung —
+   termasuk nilai lama di localStorage, studi kasus, dan aturan RDTR yang diimpor. */
+const BOUNDS=Object.fromEntries(NUMS.map(k=>{const e=$(k),a=parseFloat(e.min),b=parseFloat(e.max);return [k,{min:isFinite(a)?a:-Infinity,max:isFinite(b)?b:Infinity}]}));
+function clampS(){ let ch=false; NUMS.forEach(k=>{const B=BOUNDS[k]; let v=+S[k]; if(!isFinite(v)) v=DEF[k]; v=Math.min(B.max,Math.max(B.min,v)); if(v!==S[k]){S[k]=v;ch=true}}); return ch }
+if(clampS()) persist();
 function syncInputs(){ NUMS.forEach(k=>{ if(document.activeElement!==$(k)) $(k).value=S[k] }); $('zone').value=S.zone;
   $('areaHa').textContent=S.area?('= '+nf(S.area/10000,3)+' ha'+(S.poly?' · dari poligon':' · manual')):'';
   $('tgt').value=S.tgt;$('use').value=S.use;$('soft').value=S.soft;$('podNon').checked=!!S.podNon;$('spc').value=S.spc;$('grow').value=S.grow;
@@ -728,7 +734,8 @@ $('grow').oninput=e=>{S.grow=+e.target.value;persist();simulate()};
 document.querySelectorAll('#typo button').forEach(b=>b.classList.toggle('on',b.dataset.t===S.typo));
   document.querySelectorAll('#rnd button').forEach(b=>b.classList.toggle('on',b.dataset.m===S.rnd));
   $('pBox').hidden=S.typo!=='podium';$('cBox').hidden=S.typo!=='kluster';$('ftfTw').style.visibility=S.typo==='podium'?'visible':'hidden' }
-NUMS.forEach(k=>$(k).addEventListener('input',()=>{const v=parseFloat($(k).value); if(!isFinite(v)) return; S[k]=v;
+NUMS.forEach(k=>$(k).addEventListener('change',()=>{ if(isFinite(+S[k])) $(k).value=S[k] })); // tampilkan nilai setelah dijepit
+NUMS.forEach(k=>$(k).addEventListener('input',()=>{const v=parseFloat($(k).value); if(!isFinite(v)) return; S[k]=Math.min(BOUNDS[k].max,Math.max(BOUNDS[k].min,v));
   if(['kdb','klb','kdh','kbg','hmax','gsb'].includes(k)){S.zone='custom';$('zone').value='custom'}
   if(k==='area'){S.poly=null; if(polyLayer&&map){map.removeLayer(polyLayer);polyLayer=null} if(fpLayer&&map){map.removeLayer(fpLayer);fpLayer=null} $('areaHa').textContent='= '+nf(S.area/10000,3)+' ha · manual'}
   persist();renderMini(); if($('v-simulasi').classList.contains('on')) simulate(); else {compute(); updPopup()} }));
@@ -743,6 +750,7 @@ function renderMini(){ $('miniSite').innerHTML=`<b>${esc(S.name)}</b><br>${esc(S
 /* ---------- Engine ---------- */
 let lastRes=null;
 function compute(){
+  clampS(); // tanpa persist(): simWith() memanggil compute() dengan salinan S sementara
   const A=S.area, kdb=S.kdb/100, klb=S.klb, tgt=S.tgt/100, use=S.use/100;
   const footMax=A*kdb, gfaMax=A*klb, G=gfaMax*tgt, plate=footMax*use;
   const R={typo:S.typo,A,kdb,klb,footMax,gfaMax,G,plate,tgt,use};
@@ -992,7 +1000,7 @@ function drawSec(R){
   let s=`<line x1="${padL-20}" y1="${Z(0)}" x2="${W-padR+10}" y2="${Z(0)}" stroke="#1f1a14" stroke-width="2"/>`;
   s+=`<rect x="${X(bb.x0)}" y="${Z(0)}" width="${(bb.x1-bb.x0)*sx}" height="8" fill="#cfe0c3"/>`;
   // grid every 5 floors label
-  for(let z=0;z<=top;z+=Math.max(10,Math.round(top/8/10)*10)){s+=`<line x1="${padL-6}" y1="${Z(z)}" x2="${W-padR}" y2="${Z(z)}" stroke="#e7dfd2"/><text x="${padL-10}" y="${Z(z)+4}" font-size="10.5" text-anchor="end" fill="#6d6457">${z} m</text>`}
+  if(isFinite(top)) for(let z=0;z<=top;z+=Math.max(10,Math.round(top/8/10)*10)){s+=`<line x1="${padL-6}" y1="${Z(z)}" x2="${W-padR}" y2="${Z(z)}" stroke="#e7dfd2"/><text x="${padL-10}" y="${Z(z)+4}" font-size="10.5" text-anchor="end" fill="#6d6457">${z} m</text>`}
   (R._M.trees||[]).filter(tr=>tr.sp!=='pucuk'||true).forEach(tr=>{const col='#'+TREES[tr.sp].col.toString(16).padStart(6,'0'),x=X(tr.x),tf=TRUNKF[TREES[tr.sp].shape];s+=`<line x1="${x}" x2="${x}" y1="${Z(0)}" y2="${Z(tr.H*Math.max(tf,.3))}" stroke="#5d4a3a" stroke-width="1.2" opacity=".6"/><ellipse cx="${x}" cy="${Z(tr.H*.7)}" rx="${Math.max(1.5,tr.D/2*sx)}" ry="${Math.max(1.5,tr.H*.3*sz)}" fill="${col}" opacity=".45"/>`});
   const seen=new Set();
   pieces.forEach(pc=>{const b=bbox(pc.poly); const key=[b.x0.toFixed(2),b.x1.toFixed(2),pc.z0.toFixed(2),pc.role,pc.over].join(); if(seen.has(key)) return; seen.add(key);
