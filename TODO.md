@@ -11,10 +11,11 @@ Daftar pekerjaan lanjutan, kira-kira berurutan menurut prioritas.
 - [ ] Perbandingan dua skenario berdampingan (A/B) beserta selisih indikatornya.
 
 ## Antarmuka
-- [ ] Simpan skenario di URL (hash) agar bisa dibagikan.
-- [ ] Ekspor denah ke PNG/SVG/DXF dan tabel indikator ke CSV.
+- [x] Simpan skenario di URL (hash) agar bisa dibagikan.
+- [x] Ekspor denah/massa ke PNG dan hasil ke CSV.
+- [ ] Ekspor denah ke SVG/DXF untuk diolah di perangkat lunak CAD.
 - [ ] Klik kavling untuk melihat indikator per kavling.
-- [ ] Hentikan render loop 3D saat tab 2D aktif atau halaman tersembunyi.
+- [x] Hentikan render loop 3D saat tab 2D aktif atau halaman tersembunyi.
 
 ## Teknis
 - [ ] Test end-to-end (Playwright) untuk alur form → denah → tabel.

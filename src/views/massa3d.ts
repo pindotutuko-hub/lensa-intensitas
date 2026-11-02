@@ -24,6 +24,8 @@ export class TampilanMassa {
   private readonly observer: ResizeObserver;
   private ukuranLahanTerakhir = '';
   private frame = 0;
+  private aktif = true;
+  private readonly saatVisibilitas = () => this.aturLoop();
 
   constructor(private readonly wadah: HTMLElement) {
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -46,7 +48,32 @@ export class TampilanMassa {
     this.observer = new ResizeObserver(() => this.sesuaikanUkuran());
     this.observer.observe(wadah);
     this.sesuaikanUkuran();
-    this.putar();
+    document.addEventListener('visibilitychange', this.saatVisibilitas);
+    this.aturLoop();
+  }
+
+  /** Menghentikan render loop (mis. saat tab 2D aktif) untuk menghemat CPU/GPU. */
+  jeda(): void {
+    this.aktif = false;
+    this.aturLoop();
+  }
+
+  lanjut(): void {
+    this.aktif = true;
+    this.aturLoop();
+  }
+
+  /** Apakah render loop sedang berjalan. */
+  get berjalan(): boolean {
+    return this.frame !== 0;
+  }
+
+  /** Merender satu bingkai lalu mengambilnya sebagai data URL PNG. */
+  kePng(): string {
+    this.controls.update();
+    this.renderer.render(this.scene, this.camera);
+    // Dibaca segera setelah render, sebelum buffer WebGL dikosongkan browser.
+    return this.renderer.domElement.toDataURL('image/png');
   }
 
   perbarui(s: Skenario, hasil: HasilSimulasi, palet: PaletMassa): void {
@@ -97,7 +124,9 @@ export class TampilanMassa {
   }
 
   hancurkan(): void {
-    cancelAnimationFrame(this.frame);
+    this.aktif = false;
+    this.aturLoop();
+    document.removeEventListener('visibilitychange', this.saatVisibilitas);
     this.observer.disconnect();
     this.kosongkan();
     this.controls.dispose();
@@ -122,6 +151,16 @@ export class TampilanMassa {
     this.renderer.setSize(w, h, false);
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
+  }
+
+  private aturLoop(): void {
+    const harusJalan = this.aktif && document.visibilityState !== 'hidden';
+    if (harusJalan && this.frame === 0) {
+      this.frame = requestAnimationFrame(this.putar);
+    } else if (!harusJalan && this.frame !== 0) {
+      cancelAnimationFrame(this.frame);
+      this.frame = 0;
+    }
   }
 
   private putar = (): void => {

@@ -2,9 +2,12 @@ import './style.css';
 import {
   PRESET,
   PRESET_AWAL,
+  hasilKeCsv,
   jalankanSimulasi,
   salinSkenario,
+  skenarioDariHash,
   skenarioDariJson,
+  skenarioKeHash,
   skenarioKeJson,
   type HasilSimulasi,
   type Skenario,
@@ -69,7 +72,10 @@ const wadahMassa = $<HTMLDivElement>('#massa');
 const tabelKepatuhan = $<HTMLTableElement>('#kepatuhan');
 const tabelIndikator = $<HTMLTableElement>('#indikator');
 
-let skenario = salinSkenario(PRESET[PRESET_AWAL]!);
+const skenarioAwal = () => salinSkenario(PRESET[PRESET_AWAL]!);
+/** Skenario dari tautan (#s=...) bila ada; selain itu preset awal. */
+const dariTautan = skenarioDariHash(location.hash, skenarioAwal());
+let skenario = dariTautan ?? skenarioAwal();
 let hasilTerakhir: HasilSimulasi | null = null;
 let mode: '2d' | '3d' = '2d';
 let massa: TampilanMassa | null = null;
@@ -81,6 +87,10 @@ const setNilai = (s: Skenario, d: DefIsian, v: number) => {
 const idIsian = (d: DefIsian) => `isian-${d.kelompok}-${d.kunci}`;
 
 function bangunForm(): void {
+  // Opsi tersembunyi untuk skenario yang dimuat dari tautan/berkas atau sudah diubah.
+  const kustom = new Option('Kustom', '');
+  kustom.hidden = true;
+  pilihPreset.add(kustom);
   for (const [kunci, p] of Object.entries(PRESET)) {
     pilihPreset.add(new Option(p.nama, kunci, kunci === PRESET_AWAL, kunci === PRESET_AWAL));
   }
@@ -105,6 +115,7 @@ function bangunForm(): void {
         input.setAttribute('aria-invalid', String(Number.isNaN(v)));
         if (Number.isNaN(v)) return;
         setNilai(skenario, d, v);
+        pilihPreset.value = '';
         perbarui();
       });
       label.append(input);
@@ -192,6 +203,9 @@ function perbarui(): void {
   hasilTerakhir = r.hasil;
   tampilkanHasil(r.hasil);
   render();
+  // Simpan skenario valid di URL agar bisa dibagikan/di-bookmark tanpa menambah riwayat.
+  const hash = skenarioKeHash(skenario);
+  if (location.hash !== hash) history.replaceState(null, '', hash);
 }
 
 async function gantiMode(baru: '2d' | '3d'): Promise<void> {
@@ -206,19 +220,54 @@ async function gantiMode(baru: '2d' | '3d'): Promise<void> {
     const { TampilanMassa } = await import('./views/massa3d');
     massa = new TampilanMassa(wadahMassa);
   }
+  if (baru === '3d') massa?.lanjut();
+  else massa?.jeda();
   render();
 }
 
-function unduh(): void {
-  const blob = new Blob([skenarioKeJson(skenario)], { type: 'application/json' });
+const namaBerkas = (akhiran: string) => {
+  const slug = skenario.nama.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  return `skenario-${slug || 'kustom'}${akhiran}`;
+};
+
+function unduhUrl(href: string, nama: string): void {
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `skenario-${skenario.nama.replace(/[^\w-]+/g, '-').toLowerCase()}.json`;
+  a.href = href;
+  a.download = nama;
   a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 0);
+}
+
+function unduhBlob(isi: BlobPart, tipe: string, ekstensi: string): void {
+  const url = URL.createObjectURL(new Blob([isi], { type: tipe }));
+  unduhUrl(url, namaBerkas(`.${ekstensi}`));
+  setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
+function unduhPng(): void {
+  if (!hasilTerakhir) return;
+  if (mode === '3d' && massa) {
+    unduhUrl(massa.kePng(), namaBerkas('-3d.png'));
+  } else {
+    render();
+    unduhUrl(canvas.toDataURL('image/png'), namaBerkas('-denah.png'));
+  }
+}
+
+async function salinTautan(tombol: HTMLButtonElement): Promise<void> {
+  const url = new URL(skenarioKeHash(skenario), location.href).href;
+  const label = tombol.textContent;
+  try {
+    await navigator.clipboard.writeText(url);
+    tombol.textContent = 'Tautan disalin';
+  } catch {
+    // Clipboard API bisa ditolak (konteks tidak aman/izin); tampilkan tautan untuk disalin manual.
+    window.prompt('Salin tautan berikut:', url);
+  }
+  setTimeout(() => (tombol.textContent = label), 1500);
 }
 
 bangunForm();
+if (dariTautan) pilihPreset.value = '';
 isiForm();
 perbarui();
 
@@ -230,7 +279,23 @@ pilihPreset.addEventListener('change', () => {
 document.querySelectorAll<HTMLButtonElement>('.tab [data-mode]').forEach((b) =>
   b.addEventListener('click', () => void gantiMode(b.dataset.mode as '2d' | '3d')),
 );
-$('#unduh').addEventListener('click', unduh);
+$('#unduh').addEventListener('click', () => unduhBlob(skenarioKeJson(skenario), 'application/json', 'json'));
+$('#unduh-csv').addEventListener('click', () => {
+  // BOM agar Excel membaca UTF-8 dengan benar.
+  if (hasilTerakhir) unduhBlob('\uFEFF' + hasilKeCsv(skenario, hasilTerakhir), 'text/csv', 'csv');
+});
+$('#unduh-png').addEventListener('click', unduhPng);
+$<HTMLButtonElement>('#salin-tautan').addEventListener('click', (e) =>
+  void salinTautan(e.currentTarget as HTMLButtonElement),
+);
+window.addEventListener('hashchange', () => {
+  const baru = skenarioDariHash(location.hash, skenarioAwal());
+  if (!baru || location.hash === skenarioKeHash(skenario)) return;
+  skenario = baru;
+  pilihPreset.value = '';
+  isiForm();
+  perbarui();
+});
 $<HTMLInputElement>('#muat').addEventListener('change', async (e) => {
   const input = e.target as HTMLInputElement;
   const berkas = input.files?.[0];
@@ -238,6 +303,7 @@ $<HTMLInputElement>('#muat').addEventListener('change', async (e) => {
   if (!berkas) return;
   try {
     skenario = skenarioDariJson(await berkas.text(), skenario);
+    pilihPreset.value = '';
     isiForm();
     perbarui();
   } catch (err) {

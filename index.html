@@ -19,6 +19,7 @@
         </label>
         <form id="form-skenario" novalidate></form>
         <div class="aksi">
+          <button type="button" id="salin-tautan">Salin tautan</button>
           <button type="button" id="unduh">Unduh JSON</button>
           <label class="tombol">
             Muat JSON
@@ -28,9 +29,15 @@
         <ul id="galat" class="galat" role="alert"></ul>
       </aside>
       <section class="tampilan">
-        <div class="tab" role="tablist">
-          <button type="button" role="tab" data-mode="2d" aria-selected="true">Denah 2D</button>
-          <button type="button" role="tab" data-mode="3d" aria-selected="false">Massa 3D</button>
+        <div class="bilah">
+          <div class="tab" role="tablist">
+            <button type="button" role="tab" data-mode="2d" aria-selected="true">Denah 2D</button>
+            <button type="button" role="tab" data-mode="3d" aria-selected="false">Massa 3D</button>
+          </div>
+          <div class="aksi">
+            <button type="button" id="unduh-png">Unduh PNG</button>
+            <button type="button" id="unduh-csv">Unduh CSV</button>
+          </div>
         </div>
         <div class="kanvas">
           <canvas id="denah" aria-label="Denah tata letak"></canvas>

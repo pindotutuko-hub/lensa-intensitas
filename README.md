@@ -10,6 +10,8 @@ Aplikasi web untuk **simulasi permukiman 2D/3D** yang membantu mengkaji intensit
 - **Pemeriksaan kepatuhan** terhadap batas regulasi (KDB maks, KLB maks, KDH min, tinggi maks, PSU min).
 - **Denah 2D** (canvas, dengan skala batang dan panah utara) dan **massa 3D** (Three.js, orbit/zoom). Bangunan yang melampaui KDB/KLB/tinggi ditandai merah.
 - **Skenario contoh**: rumah tapak, rumah deret, rumah susun. Skenario dapat diunduh/dimuat sebagai JSON.
+- **Berbagi lewat tautan**: skenario tersimpan otomatis di URL (`#s=…`). Tombol *Salin tautan* menyalinnya, dan membuka tautan itu memulihkan seluruh parameter.
+- **Ekspor**: gambar tampilan aktif (denah 2D atau massa 3D) ke PNG; parameter, indikator, dan kepatuhan ke CSV (UTF-8, siap dibuka di Excel/LibreOffice).
 - Tema terang/gelap mengikuti sistem.
 
 > Batas regulasi pada skenario contoh bersifat **ilustratif**. Sesuaikan dengan RDTR/Peraturan Zonasi daerah yang dikaji.
@@ -36,6 +38,8 @@ src/
     indikator.ts     Perhitungan indikator & pemeriksaan kepatuhan
     validasi.ts      Validasi parameter skenario
     serialisasi.ts   Impor/ekspor JSON (dengan pengisian field yang hilang)
+    tautan.ts        Enkode/dekode skenario ke fragmen URL
+    ekspor.ts        Ekspor hasil simulasi ke CSV
     preset.ts        Skenario contoh
     index.ts         jalankanSimulasi(): validasi → tata letak → indikator → kepatuhan
   views/
