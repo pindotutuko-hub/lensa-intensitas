@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lensa Intensitas</title>
+    <meta name="description" content="Simulasi permukiman 2D/3D untuk mengkaji KDB, KLB, KDH dan kepadatan." />
+  </head>
+  <body>
+    <header class="kepala">
+      <h1>Lensa Intensitas</h1>
+      <p>Simulasi permukiman 2D/3D: intensitas pemanfaatan ruang</p>
+    </header>
+    <main class="tata">
+      <aside class="panel" aria-label="Parameter skenario">
+        <label class="preset">
+          Skenario contoh
+          <select id="preset"></select>
+        </label>
+        <form id="form-skenario" novalidate></form>
+        <div class="aksi">
+          <button type="button" id="unduh">Unduh JSON</button>
+          <label class="tombol">
+            Muat JSON
+            <input type="file" id="muat" accept="application/json,.json" hidden />
+          </label>
+        </div>
+        <ul id="galat" class="galat" role="alert"></ul>
+      </aside>
+      <section class="tampilan">
+        <div class="tab" role="tablist">
+          <button type="button" role="tab" data-mode="2d" aria-selected="true">Denah 2D</button>
+          <button type="button" role="tab" data-mode="3d" aria-selected="false">Massa 3D</button>
+        </div>
+        <div class="kanvas">
+          <canvas id="denah" aria-label="Denah tata letak"></canvas>
+          <div id="massa" hidden></div>
+        </div>
+        <div class="legenda">
+          <span><i class="sw lahan"></i>Ruang publik / lahan sisa</span>
+          <span><i class="sw jalan"></i>Jalan</span>
+          <span><i class="sw kavling"></i>Kavling (lahan terbuka)</span>
+          <span><i class="sw bangunan"></i>Bangunan</span>
+          <span><i class="sw melanggar"></i>Bangunan melampaui batas</span>
+        </div>
+      </section>
+      <aside class="panel" aria-label="Hasil">
+        <h2>Kepatuhan regulasi</h2>
+        <table id="kepatuhan" class="tabel"></table>
+        <h2>Indikator</h2>
+        <table id="indikator" class="tabel"></table>
+      </aside>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
