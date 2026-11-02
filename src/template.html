@@ -1621,7 +1621,7 @@ async function readDoc(file){
     else if(ext==='xlsx'||ext==='xls'){ if(!window.XLSX) throw new Error('pustaka SheetJS tidak termuat'); const wb=XLSX.read(await file.arrayBuffer(),{type:'array'});
       wb.SheetNames.forEach(n=>{const rows=XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:false,defval:''});d.tables.push({name:n,rows});d.text+=rows.map(r=>r.join(' ')).join('\n')+'\n'})}
     else if(ext==='docx'){ if(!window.mammoth) throw new Error('pustaka mammoth tidak termuat'); const r=await mammoth.extractRawText({arrayBuffer:await file.arrayBuffer()}); d.text=r.value}
-    else if(ext==='pdf'){ if(!pdfReady()) throw new Error('pustaka PDF.js tidak termuat'); const pdf=await pdfjsLib.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise; d.pages=pdf.numPages;
+    else if(ext==='pdf'){ if(!pdfReady()) throw new Error('pustaka PDF.js tidak termuat'); const pdf=await pdfjsLib.getDocument({data:new Uint8Array(await file.arrayBuffer()),isEvalSupported:false}).promise; /* isEvalSupported:false menutup CVE-2024-4367 (eksekusi JS dari PDF berbahaya) pada PDF.js 3.x */ d.pages=pdf.numPages;
       const N=Math.min(pdf.numPages,80); for(let i=1;i<=N;i++){const pg=await pdf.getPage(i);const tc=await pg.getTextContent();d.text+=tc.items.map(it=>it.str).join(' ')+'\n'} if(pdf.numPages>N) d.note=`Hanya ${N} dari ${pdf.numPages} halaman dibaca.`; if(d.text.trim().length<20) d.note+=' Teks hampir kosong: kemungkinan PDF hasil pindaian (perlu OCR).'}
     else throw new Error('format tidak didukung');
     d.found=detectRules(d.text);
