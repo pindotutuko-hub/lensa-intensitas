@@ -49,6 +49,17 @@ npm install
 npm run build
 ```
 
+Setelah mengubah `src/`, jalankan build lalu commit `dist/` juga. CI menolak PR bila `dist/` tidak sesuai dengan `src/`.
+
+## Test
+
+```bash
+npm run build
+npm test
+```
+
+Test regresi (`tests/*.test.mjs`) membuka `dist/index.html` di Chromium lewat Playwright, dengan semua akses jaringan diblokir. Yang diperiksa: hasil mesin hitung (studi kasus BRI Tower: 35 lantai), semua halaman terbuka tanpa error, dan input di luar batas tidak membuat aplikasi menggantung. Bila Chromium untuk Playwright belum terpasang, jalankan `npx playwright install chromium`.
+
 ## Catatan
 
 Nilai aturan contoh dan ukuran tanaman bertanda * hanya untuk latihan atau visualisasi. Keputusan desain harus mengacu pada RDTR, peraturan zonasi, dan KKPR resmi, misalnya melalui GISTARU ATR/BPN.

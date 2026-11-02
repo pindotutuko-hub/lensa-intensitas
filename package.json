@@ -4,10 +4,12 @@
   "private": true,
   "description": "Peta geotag tapak, simulasi intensitas bangunan (KDB/KLB/KDH/KBG), RTH, kuis, dan laporan untuk kota-kota di Indonesia.",
   "scripts": {
-    "build": "esbuild src/gl-entry.js --bundle --minify --format=iife --outfile=build/gl.js && esbuild node_modules/docx/dist/index.iife.js --minify --outfile=build/docx.min.js && python3 src/build.py"
+    "build": "esbuild src/gl-entry.js --bundle --minify --format=iife --outfile=build/gl.js && esbuild node_modules/docx/dist/index.iife.js --minify --outfile=build/docx.min.js && python3 src/build.py",
+    "test": "node --test tests/*.test.mjs"
   },
   "devDependencies": {
-    "esbuild": "^0.28.2"
+    "esbuild": "^0.28.2",
+    "playwright": "1.63.0"
   },
   "dependencies": {
     "docx": "9.15.1",
