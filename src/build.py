@@ -23,6 +23,7 @@ def offline(t):
     t = t.replace('/*LEAFLET_JS*/', rd(NM / 'leaflet/dist/leaflet.js'))
     t = t.replace('/*THREE_JS*/', rd(B / 'gl.js'))
     libs = '\n'.join(rd(p) for p in [NM / 'xlsx/dist/xlsx.full.min.js', NM / 'mammoth/mammoth.browser.min.js', NM / 'pdfjs-dist/build/pdf.min.js', B / 'docx.min.js'])
+    libs = libs.replace('\ufffd', '\\ufffd')  # tabel codepage SheetJS: tulis U+FFFD sebagai escape JS
     t = t.replace('/*LIBS_JS*/', libs)
     t = t.replace('/*PDF_WORKER_INLINE*/', rd(NM / 'pdfjs-dist/build/pdf.worker.min.js'))
     t = t.replace("'/*PDF_WORKER_URL*/'", 'null')
