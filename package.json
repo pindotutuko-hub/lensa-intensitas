@@ -1,0 +1,20 @@
+{
+  "name": "lensa-intensitas",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Peta geotag tapak, simulasi intensitas bangunan (KDB/KLB/KDH/KBG), RTH, kuis, dan laporan untuk kota-kota di Indonesia.",
+  "scripts": {
+    "build": "esbuild src/gl-entry.js --bundle --minify --format=iife --outfile=build/gl.js && esbuild node_modules/docx/dist/index.iife.js --minify --outfile=build/docx.min.js && python3 src/build.py"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  },
+  "dependencies": {
+    "docx": "9.15.1",
+    "leaflet": "1.9.4",
+    "mammoth": "1.13.0",
+    "pdfjs-dist": "3.11.174",
+    "three": "0.187.0",
+    "xlsx": "0.18.5"
+  }
+}
